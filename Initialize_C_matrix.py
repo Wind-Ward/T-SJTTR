@@ -88,8 +88,6 @@ class Initialize_C_Matrix(object):
         self.storeCaculatedTFIDF(C_list2)
 
 
-
-
     def store(self):
         fw = open("data/var/C_list", "wb")
         pickle.dump(self.C_list,fw)
@@ -108,5 +106,5 @@ class Initialize_C_Matrix(object):
 
 if __name__=="__main__":
     #timeInterval=1000
-    #Initialize_C_Matrix().initializeC(timeInterval)
+    Initialize_C_Matrix().initializeC(timeInterval)
     Initialize_C_Matrix().caculateCwith_TFIDF()

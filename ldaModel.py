@@ -8,32 +8,24 @@ import codecs
 import os
 
 from collections import OrderedDict
-#获取当前路径
-path = os.getcwd()
-#导入日志配置文件
-logging.config.fileConfig("logging.conf")
-#创建日志对象
-logger = logging.getLogger()
-# loggerInfo = logging.getLogger("TimeInfoLogger")
-# Consolelogger = logging.getLogger("ConsoleLogger")
 
 #导入配置文件
 conf = ConfigParser.ConfigParser()
-conf.read("setting.conf") 
+conf.read("setting.conf")
 #文件路径
-trainfile = os.path.join(path,os.path.normpath(conf.get("filepath", "trainfile")))
-wordidmapfile = os.path.join(path,os.path.normpath(conf.get("filepath","wordidmapfile")))
-thetafile = os.path.join(path,os.path.normpath(conf.get("filepath","thetafile")))
-phifile = os.path.join(path,os.path.normpath(conf.get("filepath","phifile")))
-paramfile = os.path.join(path,os.path.normpath(conf.get("filepath","paramfile")))
-topNfile = os.path.join(path,os.path.normpath(conf.get("filepath","topNfile")))
-tassginfile = os.path.join(path,os.path.normpath(conf.get("filepath","tassginfile")))
+trainfile = "data/train.dat"
+wordidmapfile = "data/tmp/wordidmap.dat"
+thetafile ="data/tmp/model_theta.dat"
+phifile = "data/tmp/model_phi.dat"
+paramfile = "data/tmp/model_parameter.dat"
+topNfile = "data/tmp/model_twords.dat"
+tassginfile = "data/tmp/model_tassign.dat"
 #模型初始参数
-K = int(conf.get("model_args","K"))
-alpha = float(conf.get("model_args","alpha"))
-beta = float(conf.get("model_args","beta"))
-iter_times = int(conf.get("model_args","iter_times"))
-top_words_num = int(conf.get("model_args","top_words_num"))
+K = 10
+alpha = 0.1
+beta =0.1
+iter_times = 10
+top_words_num = 20
 
 class Document(object):
     def __init__(self):
@@ -140,41 +132,47 @@ class LDAModel(object):
         # Consolelogger.info(u"迭代次数为%s 次" % self.iter_times)
         for x in xrange(self.iter_times):
             for i in xrange(self.dpre.docs_count):
-                print self.dpre.docs[i].length
-                print "dpre.docs[i].length"
+                # print self.dpre.docs[i].length
+                # print "dpre.docs[i].length"
                 for j in xrange(self.dpre.docs[i].length):
                     topic = self.sampling(i,j)
                     self.Z[i][j] = topic
-        logger.info(u"迭代完成。")
-        logger.debug(u"计算文章-主题分布")
+
+
         self._theta()
-        logger.debug(u"计算词-主题分布")
+
+
         self._phi()
-        logger.debug(u"保存模型")
+
+
         self.save()
+        return self.theta
+
     def _theta(self):
         for i in xrange(self.dpre.docs_count):
             self.theta[i] = (self.nd[i]+self.alpha)/(self.ndsum[i]+self.K * self.alpha)
+
     def _phi(self):
         for i in xrange(self.K):
             self.phi[i] = (self.nw.T[i] + self.beta)/(self.nwsum[i]+self.dpre.words_count * self.beta)
     def save(self):
         #保存theta文章-主题分布
-        logger.info(u"文章-主题分布已保存到%s" % self.thetafile)
+
+
         with codecs.open(self.thetafile,'w') as f:
             for x in xrange(self.dpre.docs_count):
                 for y in xrange(self.K):
                     f.write(str(self.theta[x][y]) + '\t')
                 f.write('\n')
         #保存phi词-主题分布
-        logger.info(u"词-主题分布已保存到%s" % self.phifile)
+
         with codecs.open(self.phifile,'w') as f:
             for x in xrange(self.K):
                 for y in xrange(self.dpre.words_count):
                     f.write(str(self.phi[x][y]) + '\t')
                 f.write('\n')
         #保存参数设置
-        logger.info(u"参数设置已保存到%s" % self.paramfile)
+
         with codecs.open(self.paramfile,'w','utf-8') as f:
             f.write('K=' + str(self.K) + '\n')
             f.write('alpha=' + str(self.alpha) + '\n')
@@ -182,7 +180,7 @@ class LDAModel(object):
             f.write(u'迭代次数  iter_times=' + str(self.iter_times) + '\n')
             f.write(u'每个类的高频词显示个数  top_words_num=' + str(self.top_words_num) + '\n')
         #保存每个主题topic的词
-        logger.info(u"主题topN词已保存到%s" % self.topNfile)
+
 
         with codecs.open(self.topNfile,'w','utf-8') as f:
             self.top_words_num = min(self.top_words_num,self.dpre.words_count)
@@ -195,13 +193,13 @@ class LDAModel(object):
                     word = OrderedDict({value:key for key, value in self.dpre.word2id.items()})[twords[y][0]]
                     f.write('\t'*2+ word +'\t' + str(twords[y][1])+ '\n')
         #保存最后退出时，文章的词分派的主题的结果
-        logger.info(u"文章-词-主题分派结果已保存到%s" % self.tassginfile)
+
         with codecs.open(self.tassginfile,'w') as f:
             for x in xrange(self.dpre.docs_count):
                 for y in xrange(self.dpre.docs[x].length):
                     f.write(str(self.dpre.docs[x].words[y])+':'+str(self.Z[x][y])+ '\t')
                 f.write('\n')
-        logger.info(u"模型训练完成。")
+
 
 
 
@@ -209,10 +207,10 @@ class LDAModel(object):
 
 
 def preprocessing():
-    logger.info(u'载入数据......')
+
     with codecs.open(trainfile, 'r','utf-8') as f:
         docs = f.readlines()
-    logger.debug(u"载入完成,准备生成字典对象和统计文本数据...")
+
     dpre = DataPreProcessing()
     items_idx =  0
     for line in docs:
@@ -235,18 +233,59 @@ def preprocessing():
     print "dpre.docs_count: %d" % dpre.docs_count
     dpre.words_count = len(dpre.word2id)
     print "dpre.words_count: %d" % dpre.words_count
-    logger.info(u"共有%s个文档" % dpre.docs_count)
+
     dpre.cachewordidmap()
-    logger.info(u"词与序号对应关系已保存到%s" % wordidmapfile)
+
+
+    return dpre
+
+
+def preprocessing2(TrainFile):
+
+    with open(TrainFile) as f:
+        docs = f.readlines()
+
+    dpre = DataPreProcessing()
+    items_idx =  0
+    for line in docs:
+        if line != "":
+            tmp = line.strip().split()
+            #生成一个文档对象
+            doc = Document()
+            for item in tmp:
+                if dpre.word2id.has_key(item):
+                    doc.words.append(dpre.word2id[item])
+                else:
+                    dpre.word2id[item] = items_idx
+                    doc.words.append(items_idx)
+                    items_idx += 1
+            doc.length = len(tmp)
+            dpre.docs.append(doc)
+        else:
+            pass
+    dpre.docs_count = len(dpre.docs)
+    print "dpre.docs_count: %d" % dpre.docs_count
+    dpre.words_count = len(dpre.word2id)
+    print "dpre.words_count: %d" % dpre.words_count
+
+    dpre.cachewordidmap()
+
     print dpre.docs
     return dpre
+
 
 def run():
     dpre = preprocessing()
     lda = LDAModel(dpre)
     lda.est()
+
+
+def run2(TrainFile):
+    dpre = preprocessing2(TrainFile)
+    lda = LDAModel(dpre)
+    return lda.est()
     
 
 if __name__ == '__main__':
-    run()
+    run2(TrainFile)
     

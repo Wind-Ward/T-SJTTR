@@ -2,3 +2,5 @@
 *.pyc
 /data/var/
 /python-LDA/
+/data/LDA_ProcessWithT/
+/data/tmp/

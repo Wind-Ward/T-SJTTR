@@ -2,9 +2,13 @@
 import re
 import jieba
 import jieba.posseg as pseg
-
 import uniout
+import copy
 
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 class BulletScreen(object):
     def __init__(self):
         self.stop_words= set([
@@ -50,13 +54,18 @@ class BulletScreen(object):
                         if item not in vocabulary:
                             vocabulary[item]=0
 
-
         lines=sorted(tempLine, key= lambda e:(e.__getitem__('time')))
         print vocabulary
         print  "vocabulary size: %d " % len(vocabulary)
         print  "video comment size: %d " % len(lines)
         print  lines[12]
+        self.store(lines,timelength)
         return lines,timelength,vocabulary
+
+    def store(self,lines,timelength):
+        fw = open("data/var/lines", "wb")
+        pickle.dump({"lines":lines,"timelength":timelength},fw)
+        fw.close()
 
     def run(self):
         self.load_stop_words()
