@@ -55,6 +55,7 @@ class BulletScreen(object):
         print vocabulary
         print  "vocabulary size: %d " % len(vocabulary)
         print  "video comment size: %d " % len(lines)
+        print  lines[12]
         return lines,timelength,vocabulary
 
     def run(self):
