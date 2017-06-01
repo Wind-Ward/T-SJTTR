@@ -25,7 +25,7 @@ class Initialize_T_matrix(object):
                 f.write("\n")
                 self.lines.pop(0)
 
-    def initializeC(self,timeInterval,dictory="data/LDA_ProcessWithT/"):
+    def initializeT(self,timeInterval,dictory="data/LDA_ProcessWithT/"):
         self.lines,timeLength=self.grab()
         preTime=0
         lastTime=preTime+timeInterval
@@ -58,6 +58,7 @@ class Initialize_T_matrix(object):
             abs_path = os.path.join(dirname, file)
             T_list.append(ldaModel.run2(abs_path))
         self.store(T_list)
+        print "T_list size: %d" % len(T_list)
 
     def store(self, T_list):
         fw = open("data/var/T_list", "wb")
@@ -70,7 +71,7 @@ class Initialize_T_matrix(object):
 
 
 if __name__=="__main__":
-    timeInterval = 1000
-    #Initialize_T_matrix().initializeC(timeInterval)
+    #timeInterval = 100
+    #Initialize_T_matrix().initializeT(timeInterval)
     Initialize_T_matrix().calculateTwithLDA()
 

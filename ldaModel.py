@@ -21,11 +21,11 @@ paramfile = "data/tmp/model_parameter.dat"
 topNfile = "data/tmp/model_twords.dat"
 tassginfile = "data/tmp/model_tassign.dat"
 #模型初始参数
-K = 10
+K = 15
 alpha = 0.1
 beta =0.1
-iter_times = 10
-top_words_num = 20
+iter_times = 500
+top_words_num = 15
 
 class Document(object):
     def __init__(self):
@@ -140,11 +140,7 @@ class LDAModel(object):
 
 
         self._theta()
-
-
         self._phi()
-
-
         self.save()
         return self.theta
 
@@ -199,11 +195,6 @@ class LDAModel(object):
                 for y in xrange(self.dpre.docs[x].length):
                     f.write(str(self.dpre.docs[x].words[y])+':'+str(self.Z[x][y])+ '\t')
                 f.write('\n')
-
-
-
-
-
 
 
 def preprocessing():
@@ -270,7 +261,6 @@ def preprocessing2(TrainFile):
 
     dpre.cachewordidmap()
 
-    print dpre.docs
     return dpre
 
 

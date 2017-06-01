@@ -15,19 +15,25 @@ class Initialize_C_Matrix(object):
         self.C=[]
         self.C_list=[]
         self.lines=[]
+        self.lineno_list=[]
+
 
     def addRestVideoComment(self):
         self.C=[]
+        lineno=[]
         while (len(self.lines) != 0):
             copy_vocabulary = copy.copy(self.vocabulary)
             for item in self.lines[0]["text"]:
                 if item in copy_vocabulary:
                     copy_vocabulary[item] += 1
             self.C.append(copy_vocabulary.values())
+            lineno.append(self.lines[0]["lineno"])
             self.lines.pop(0)
             copy_vocabulary = copy.copy(self.vocabulary)
         print "C size: %d " % len(self.C)
         self.C_list.append(self.C)
+        self.lineno_list.append(lineno)
+        self.store_lineno_list()
 
 
     def initializeC(self,timeInterval):
@@ -35,6 +41,7 @@ class Initialize_C_Matrix(object):
         preTime=0
         lastTime=preTime+timeInterval
         for index in xrange(int(timeLength/timeInterval)):
+            lineno=[]
             while(len(self.lines)!=0):
                 copy_vocabulary = copy.copy(self.vocabulary)
                 if self.lines[0]["time"] <=lastTime:
@@ -42,12 +49,15 @@ class Initialize_C_Matrix(object):
                         if item in copy_vocabulary:
                             copy_vocabulary[item]+=1
                     self.C.append(copy_vocabulary.values())
+                    lineno.append(self.lines[0]["lineno"])
                     self.lines.pop(0)
                 else:
                     preTime=lastTime
                     lastTime=preTime+timeInterval
                     self.C_list.append(self.C)
                     print "C size: %d " % len(self.C)
+                    self.lineno_list.append(lineno)
+                    lineno = []
                     self.C=[]
                     break
 
@@ -58,6 +68,8 @@ class Initialize_C_Matrix(object):
         print self.C_list[0][12]
         self.store()
         return self.C_list
+
+
 
     def caculateCwith_TFIDF(self):
         C_list=self.grab()
@@ -82,9 +94,9 @@ class Initialize_C_Matrix(object):
             C_matrix2=[]
             for i,item in enumerate(_C_matrix):
                 C_matrix2.append(item/row_sum[i]*np.log(1+row_num/column_sum))
-            C_list2.append(C_matrix2)
+            C_list2.append((np.array(C_matrix2)).T)
         print "C_tfidf"
-        print list(C_list2[0][12])
+        print C_list2[0][12]
         self.storeCaculatedTFIDF(C_list2)
 
 
@@ -93,7 +105,13 @@ class Initialize_C_Matrix(object):
         pickle.dump(self.C_list,fw)
         fw.close()
 
+    def store_lineno_list(self):
+        fw = open("data/var/lineno_list", "wb")
+        pickle.dump(self.lineno_list,fw)
+        fw.close()
+
     def storeCaculatedTFIDF(self,C_list):
+        print C_list[0].shape
         fw = open("data/var/C_list_tfidf", "wb")
         pickle.dump(C_list, fw)
         fw.close()
@@ -105,6 +123,6 @@ class Initialize_C_Matrix(object):
         return vocabList
 
 if __name__=="__main__":
-    #timeInterval=1000
-    Initialize_C_Matrix().initializeC(timeInterval)
+    #timeInterval=100
+    #Initialize_C_Matrix().initializeC(timeInterval)
     Initialize_C_Matrix().caculateCwith_TFIDF()
