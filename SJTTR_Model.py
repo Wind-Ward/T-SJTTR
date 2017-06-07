@@ -68,29 +68,34 @@ class SJTTR(object):
 
     def _A_k(self,k,new_beta_k,old_A_k):
         if k==0:
-            #print "C_list["+str(k)+"].shape:"+str(self.C_list[k].shape)
-            temp=np.dot(self.C_list[k].T,self.C_list[k])
-            #print "temp.shape:"+str(temp.shape)
-            #print "old_A_k"+str(old_A_k.shape)
-            #print "new_beta_k"+str(len(new_beta_k))
-            temp2=(np.dot(old_A_k,temp)+np.dot(old_A_k,np.linalg.inv(np.diag(new_beta_k))))
-            print old_A_k
-            print old_A_k.shape
-            #print old_A_k
-            return temp/temp2*old_A_k
+            numberator=np.dot(self.C_list[k].T,self.C_list[k])
+            denumberator=(np.dot(old_A_k,numberator)+np.dot(old_A_k,np.linalg.inv(np.diag(new_beta_k))))
+            #if any elements of denumberator is 0 ,the result there should be set 0
+            _denumberator=np.where(denumberator==0,-1,denumberator)
+            result=numberator/_denumberator*old_A_k
+            return np.where(result<0,0,result)
         else:
-            temp = np.dot(self.C_list[k].T,self.C_hat)
-            return temp / (np.dot(old_A_k, temp) + np.dot(old_A_k, np.linalg.inv(np.diag(new_beta_k)))) * old_A_k
+            numberator = np.dot(self.C_list[k].T,self.C_hat)
+            denumberator = (np.dot(np.dot(old_A_k, self.C_hat.T) ,self.C_hat)+ np.dot(old_A_k, np.linalg.inv(np.diag(new_beta_k))))
+            # if any elements of denumberator is 0 ,the result there should be set 0
+            _denumberator = np.where(denumberator == 0, -1,denumberator)
+            result = numberator / _denumberator * old_A_k
+            return np.where(result < 0, 0, result)
 
 
     def _B_k(self,k,new_beta_k,old_B_k):
         if k == 0:
-            temp = np.dot(self.T_list[k].T,self.T_list[k])
-            return temp /(np.dot(old_B_k,temp) + np.dot(old_B_k, np.linalg.inv(np.diag(new_beta_k)))) * old_B_k
+            numberator = np.dot(self.T_list[k].T,self.T_list[k])
+            denumberator =(np.dot(old_B_k,numberator) + np.dot(old_B_k, np.linalg.inv(np.diag(new_beta_k))))
+            _denumberator = np.where(denumberator == 0, -1, denumberator)
+            result=numberator/_denumberator*old_B_k
+            return np.where(result<0,0,result)
         else:
-            temp = np.dot(self.T_list[k].T,self.T_hat)
-            return temp / (np.dot(old_B_k, temp) + np.dot(old_B_k, np.linalg.inv(np.diag(new_beta_k)))) * old_B_k
-
+            numberator = np.dot(self.T_list[k].T,self.T_hat)
+            denumberator= np.dot((np.dot(old_B_k, self.T_hat.T),self.T_hat) + np.dot(old_B_k, np.linalg.inv(np.diag(new_beta_k))))
+            _denumberator= np.where(denumberator == 0, -1, denumberator)
+            result = numberator / _denumberator * old_B_k
+            return np.where(result<0,0,result)
 
     def _augumented_C_and_T(self,k):
         rp_comment=[item[1] for item in sorted([(item,i) for i,item in enumerate(self.new_beta_k)],\
@@ -98,12 +103,15 @@ class SJTTR(object):
         self.X_list.append(rp_comment)
         C_hat=[]
         C_hat.append(self.C_list[k])
-        C_hat.append([self.C_list[k-1][item] for item in rp_comment])
+        for item in self.C_list[k]:
+            C_hat.append(item)
+        for item in self.C_list[k-1].T[item]
+        C_hat.append(self.C_list[k-1].T[item] for item in rp_comment)
 
         T_hat=[]
         T_hat.append(self.T_list[k])
-        T_hat.append([self.T_list[k-1][item] for item in rp_comment])
-        return C_hat,T_hat
+        T_hat.append(self.T_list[k-1].T[item] for item in rp_comment)
+        return np.array(C_hat).T,np.array(T_hat).T
 
 
     def _theta(self, k, N_old, N_new):
@@ -143,7 +151,7 @@ class SJTTR(object):
                         self.new_A_k=self._A_k(k,self.new_beta_k,self.old_A_k)
                         dis=distance(self.old_A_k,self.new_A_k)
                         print "%d A dis: %f" % (k,dis)
-                        if dis<=1:
+                        if dis<=0.1:
                             break
                         else:
                             self.old_A_k=self.new_A_k
@@ -153,8 +161,8 @@ class SJTTR(object):
                     while True:
                         self.new_B_k = self._B_k(k, self.new_beta_k, self.old_B_k)
                         dis=distance(self.old_B_k, self.new_B_k)
-                        print "%d A dis: %f" % (k, dis)
-                        if  dis<= 1:
+                        print "%d B dis: %f" % (k, dis)
+                        if  dis<= 0.1:
                             break
                         else:
                             self.old_B_k = self.new_B_k
@@ -162,8 +170,8 @@ class SJTTR(object):
                         print "%d B loop: %d" % (k,index)
 
                     dis=distance(self.old_beta_k,self.new_beta_k)
-                    print "%d A dis: %f" % (k, dis)
-                    if dis<=1:
+                    print "%d beta dis: %f" % (k, dis)
+                    if dis<=0.1:
                         break
                     else:
                         self.old_beta_k=self.new_beta_k
@@ -172,7 +180,7 @@ class SJTTR(object):
 
 
             else:
-                self.C_hat,self.T_hat=_augumented_C_and_T(k)
+                self.C_hat,self.T_hat=self._augumented_C_and_T(k)
                 N_old = self.C_list[k].shape[1]
                 N_new=N_old+self.m
                 self.old_A_k, self.old_B_k, self.old_beta_k =self.initialize_A_B_beta(N_old,N_new)
@@ -187,7 +195,7 @@ class SJTTR(object):
                         self.new_A_k = self._A_k(k, self.new_beta_k, self.old_A_k)
                         dis=distance(self.old_A_k, self.new_A_k)
                         print "%d A dis: %f" % (k, dis)
-                        if dis <= 1:
+                        if dis <= 0.1:
                             break
                         else:
                             self.old_A_k = self.new_A_k
@@ -197,16 +205,16 @@ class SJTTR(object):
                     while True:
                         self.new_B_k = self._B_k(k, self.new_beta_k, self.old_B_k)
                         dis=distance(self.old_B_k, self.new_B_k)
-                        print "%d A dis: %f" % (k, dis)
-                        if dis <= 1:
+                        print "%d B dis: %f" % (k, dis)
+                        if dis <= 0.1:
                             break
                         else:
                             self.old_B_k = self.new_B_k
                         index += 1
-                        print " %d beta loop: %d" % (k, index)
+                        print " %d B loop: %d" % (k, index)
                     dis=distance(self.old_beta_k, self.new_beta_k)
-                    print "%d A dis: %f" % (k, dis)
-                    if  dis<= 1:
+                    print "%d beta dis: %f" % (k, dis)
+                    if  dis<= 0.1:
                         break
                     else:
                         self.old_beta_k=self.new_beta_k
