@@ -36,6 +36,7 @@ class Initialize_C_Matrix(object):
         self.store_lineno_list()
 
 
+
     def initializeC(self,timeInterval):
         self.lines,timeLength,self.vocabulary=BulletScreen().run()
         preTime=0
@@ -65,8 +66,9 @@ class Initialize_C_Matrix(object):
         print "size of C_list: " +str(len(self.C_list))
         print "size of C_list[0]: " + str(len(self.C_list[0]))
         print "size of C_list[0][3]: " + str(len(self.C_list[0][3]))
-        print self.C_list[0][12]
+        #print self.C_list[0][12]
         self.store()
+        print self.lineno_list
         return self.C_list
 
 
@@ -123,6 +125,6 @@ class Initialize_C_Matrix(object):
         return vocabList
 
 if __name__=="__main__":
-    #timeInterval=100
-    #Initialize_C_Matrix().initializeC(timeInterval)
-    Initialize_C_Matrix().caculateCwith_TFIDF()
+    timeInterval=100
+    Initialize_C_Matrix().initializeC(timeInterval)
+    #Initialize_C_Matrix().caculateCwith_TFIDF()

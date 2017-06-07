@@ -58,14 +58,17 @@ class Initialize_T_matrix(object):
         print self.slice_number
         theta=list(ldaModel.run2(dirname+"_comment.txt"))
         T_list=[]
+
         for item in self.slice_number:
             T_list.append(theta[:item])
             theta.pop(item)
         self.store(T_list)
-
+        for item in T_list:
+           print len(item)
         print "T_list size: %d" % len(T_list)
 
     def store_slice_number(self, slice_number):
+        print(len(slice_number))
         fw = open("data/var/slice_number", "wb")
         pickle.dump(slice_number, fw)
         fw.close()
@@ -91,6 +94,8 @@ class Initialize_T_matrix(object):
         # print(temp[0].shape)
         # print(type(temp[0]))
         fw.close()
+
+
 
 
 if __name__=="__main__":

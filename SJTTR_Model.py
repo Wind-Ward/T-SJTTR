@@ -55,28 +55,33 @@ class SJTTR(object):
         self.X_list=[]
 
 
-
     def initialize_A_B_beta(self,N_old,N_new):
-        old_A_k=np.full((N_old,N_old),10)
-        old_B_k=np.full((N_old,N_old),10)
+        old_A_k=np.full((N_old,N_new),10)
+        old_B_k=np.full((N_old,N_new),10)
         old_beta_k=np.ones(N_new)
         return old_A_k,old_B_k,old_beta_k
 
     def _beta_k(self,old_A_k,old_B_k,theta_k):
-        return np.sqrt((self.rho*np.sum(old_A_k**2,axis=0)+(1-self.rho)*np.sum(old_B_k**2,axis=0))/\
-                                (self.Lambda*theta_k))
+        return np.sqrt(self.rho*np.sum(old_A_k**2,axis=0)+(1-self.rho)*np.sum(old_B_k**2,axis=0))
+        # /(self.Lambda*theta_k))
+
 
     def _A_k(self,k,new_beta_k,old_A_k):
         if k==0:
             numberator=np.dot(self.C_list[k].T,self.C_list[k])
-            denumberator=(np.dot(old_A_k,numberator)+np.dot(old_A_k,np.linalg.inv(np.diag(new_beta_k))))
+            denumberator=np.dot(old_A_k,numberator)+np.dot(old_A_k,np.linalg.inv(np.diag(new_beta_k)))
             #if any elements of denumberator is 0 ,the result there should be set 0
             _denumberator=np.where(denumberator==0,-1,denumberator)
             result=numberator/_denumberator*old_A_k
             return np.where(result<0,0,result)
         else:
             numberator = np.dot(self.C_list[k].T,self.C_hat)
-            denumberator = (np.dot(np.dot(old_A_k, self.C_hat.T) ,self.C_hat)+ np.dot(old_A_k, np.linalg.inv(np.diag(new_beta_k))))
+            # print numberator.shape
+            # print old_A_k.shape
+
+            _temp=1/np.where(new_beta_k == 0, -1, new_beta_k)
+            denumberator = np.dot(np.dot(old_A_k, self.C_hat.T) ,self.C_hat)+ np.dot(old_A_k, \
+                                                                                     np.diag(np.where(_temp < 0, 0, _temp)))
             # if any elements of denumberator is 0 ,the result there should be set 0
             _denumberator = np.where(denumberator == 0, -1,denumberator)
             result = numberator / _denumberator * old_A_k
@@ -86,31 +91,48 @@ class SJTTR(object):
     def _B_k(self,k,new_beta_k,old_B_k):
         if k == 0:
             numberator = np.dot(self.T_list[k].T,self.T_list[k])
-            denumberator =(np.dot(old_B_k,numberator) + np.dot(old_B_k, np.linalg.inv(np.diag(new_beta_k))))
+            denumberator =np.dot(old_B_k,numberator) + np.dot(old_B_k, np.linalg.inv(np.diag(new_beta_k)))
             _denumberator = np.where(denumberator == 0, -1, denumberator)
             result=numberator/_denumberator*old_B_k
             return np.where(result<0,0,result)
         else:
             numberator = np.dot(self.T_list[k].T,self.T_hat)
-            denumberator= np.dot((np.dot(old_B_k, self.T_hat.T),self.T_hat) + np.dot(old_B_k, np.linalg.inv(np.diag(new_beta_k))))
+            # print numberator.shape
+            # print old_B_k.shape
+            # print self.T_hat.shape
+            _temp = 1 / np.where(new_beta_k == 0, -1, new_beta_k)
+            denumberator= np.dot(np.dot(old_B_k, self.T_hat.T),self.T_hat)+np.dot(old_B_k,np.diag(np.where(_temp < 0, 0, _temp)))
             _denumberator= np.where(denumberator == 0, -1, denumberator)
             result = numberator / _denumberator * old_B_k
             return np.where(result<0,0,result)
 
-    def _augumented_C_and_T(self,k):
-        rp_comment=[item[1] for item in sorted([(item,i) for i,item in enumerate(self.new_beta_k)],\
-                                    key=lambda x:x[0],reverse=True)[:self.m]]
-        self.X_list.append(rp_comment)
-        C_hat=[]
-        C_hat.append(self.C_list[k])
-        for item in self.C_list[k]:
-            C_hat.append(item)
-        for item in self.C_list[k-1].T[item]
-        C_hat.append(self.C_list[k-1].T[item] for item in rp_comment)
 
-        T_hat=[]
-        T_hat.append(self.T_list[k])
-        T_hat.append(self.T_list[k-1].T[item] for item in rp_comment)
+    def _augumented_C_and_T(self,k,old_C_hat,old_T_hat):
+
+
+        C_hat=[item for item in self.C_list[k].T]
+        T_hat=[item for item in self.T_list[k].T]
+
+        #corresponding to the index of beta
+        rp_comment = [item[1] for item in sorted([(item, i) for i, item in enumerate(self.new_beta_k)], \
+                                                    key=lambda x: x[0], reverse=True)[:self.m]]
+
+
+        if k<self.K-1:
+            #correspond to the lineno of TSC
+            temp=[self.lineno_list[k][item] for item in rp_comment]
+            self.X_list.append(temp)
+            for item in temp:
+                self.lineno_list[k+1].append(item)
+        else:
+            pass
+
+        #
+        for item in rp_comment:
+                C_hat.append(old_C_hat.T[item])
+                T_hat.append(old_T_hat.T[item])
+
+
         return np.array(C_hat).T,np.array(T_hat).T
 
 
@@ -131,8 +153,9 @@ class SJTTR(object):
         with open("data/representative", 'w') as f:
             for i,item in enumerate(self.X_list):
                 for item2 in enumerate(item):
-                    f.write(self.lineno_list[i][item2])
+                    f.write(item2+" ")
                 f.write("\n")
+
 
     def estimation(self):
         index=0
@@ -168,7 +191,6 @@ class SJTTR(object):
                             self.old_B_k = self.new_B_k
                         index+=1
                         print "%d B loop: %d" % (k,index)
-
                     dis=distance(self.old_beta_k,self.new_beta_k)
                     print "%d beta dis: %f" % (k, dis)
                     if dis<=0.1:
@@ -176,11 +198,14 @@ class SJTTR(object):
                     else:
                         self.old_beta_k=self.new_beta_k
                         index+=1
-                        print "index: %d" % index
-
-
+                        print " %d beta loop: %d" % (k, index)
             else:
-                self.C_hat,self.T_hat=self._augumented_C_and_T(k)
+                if k==1:
+                    self.C_hat, self.T_hat = self._augumented_C_and_T(k,self.C_list[0], self.T_list[0])
+                else:
+                    self.C_hat, self.T_hat = self._augumented_C_and_T(k, self.C_hat, self.T_hat)
+                # print self.C_hat.shape
+                # print self.T_hat.shape
                 N_old = self.C_list[k].shape[1]
                 N_new=N_old+self.m
                 self.old_A_k, self.old_B_k, self.old_beta_k =self.initialize_A_B_beta(N_old,N_new)
@@ -190,7 +215,7 @@ class SJTTR(object):
                 while True:
                     self.new_beta_k = self._beta_k(self.old_A_k, self.old_B_k,self.theta_k)
                     print "%d beta_k: %d" % (k, index)
-                    print self.new_beta_k
+                    # print self.new_beta_k
                     while True:
                         self.new_A_k = self._A_k(k, self.new_beta_k, self.old_A_k)
                         dis=distance(self.old_A_k, self.new_A_k)
