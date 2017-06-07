@@ -15,6 +15,7 @@ except ImportError:
 class Initialize_T_matrix(object):
     def __init__(self):
         self.lines = []
+        #the TSC num of each slice
         self.slice_number=[]
 
     def addRestVideoComment(self,dictory):
@@ -56,9 +57,10 @@ class Initialize_T_matrix(object):
     def calculateTwithLDA(self,dirname="data/LDA_ProcessWithT/"):
         self.slice_number=self.grab_slice_number()
         print self.slice_number
+
         theta=list(ldaModel.run2(dirname+"_comment.txt"))
         T_list=[]
-
+        print theta
         for item in self.slice_number:
             T_list.append(theta[:item])
             theta.pop(item)
@@ -99,9 +101,8 @@ class Initialize_T_matrix(object):
 
 
 if __name__=="__main__":
-    timeInterval = 100
+    timeInterval = 300
     t=Initialize_T_matrix()
     #t.initializeT(timeInterval)
     t.calculateTwithLDA()
-    #Initialize_T_matrix().calculateTwithLDA()
 

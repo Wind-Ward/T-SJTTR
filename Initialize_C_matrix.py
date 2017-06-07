@@ -125,6 +125,6 @@ class Initialize_C_Matrix(object):
         return vocabList
 
 if __name__=="__main__":
-    timeInterval=100
-    Initialize_C_Matrix().initializeC(timeInterval)
-    #Initialize_C_Matrix().caculateCwith_TFIDF()
+    timeInterval=300
+    #Initialize_C_Matrix().initializeC(timeInterval)
+    Initialize_C_Matrix().caculateCwith_TFIDF()

@@ -1,4 +1,8 @@
 #-*- coding:utf-8 -*-
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
+
 import logging
 import logging.config
 import ConfigParser
@@ -24,7 +28,7 @@ tassginfile = "data/tmp/model_tassign.dat"
 K = 8
 alpha = 50/K
 beta =0.1
-iter_times = 500
+iter_times = 10
 top_words_num = 15
 
 class Document(object):
@@ -100,7 +104,9 @@ class LDAModel(object):
                 self.nwsum[topic] += 1
 
         self.theta = np.array([ [0.0 for y in xrange(self.K)] for x in xrange(self.dpre.docs_count) ])
-        self.phi = np.array([ [ 0.0 for y in xrange(self.dpre.words_count) ] for x in xrange(self.K)]) 
+        self.phi = np.array([ [ 0.0 for y in xrange(self.dpre.words_count) ] for x in xrange(self.K)])
+
+
     def sampling(self,i,j):
 
         topic = self.Z[i][j]
@@ -128,6 +134,7 @@ class LDAModel(object):
         self.ndsum[i] +=1
 
         return topic
+
     def est(self):
         # Consolelogger.info(u"迭代次数为%s 次" % self.iter_times)
         for x in xrange(self.iter_times):
@@ -277,5 +284,6 @@ def run2(TrainFile):
     
 
 if __name__ == '__main__':
+    TrainFile="data/LDA_ProcessWithT/_comment.txt"
     run2(TrainFile)
     

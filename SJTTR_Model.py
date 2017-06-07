@@ -34,18 +34,28 @@ def grab_lineno_list():
     fr.close()
     return lineno_list
 
+def grab_slice_number():
+    fr = open("data/var/slice_number", "rb")
+    slice_number = pickle.load(fr)
+    fr.close()
+    return slice_number
+
+
+
 
 def distance(M,N):
     return np.linalg.norm(M - N)
 
 class SJTTR(object):
 
-    def __init__(self,rho=0.5,gamma=0.8,l_ambda=200,m=3,w=1):
+    def __init__(self,rho=0.5,gamma=0.8,l_ambda=200,m=5,w=1):
         self.C_list=grab_C_list()
 
         #print self.C_list[0].shape
         self.T_list=grab_T_list()
+
         self.lineno_list=grab_lineno_list()
+        self.slice_number=grab_slice_number()
         self.rho=rho
         self.gamma=gamma
         self.Lambda=l_ambda
@@ -91,15 +101,20 @@ class SJTTR(object):
     def _B_k(self,k,new_beta_k,old_B_k):
         if k == 0:
             numberator = np.dot(self.T_list[k].T,self.T_list[k])
+
+            print numberator.shape
+            print old_B_k
+
             denumberator =np.dot(old_B_k,numberator) + np.dot(old_B_k, np.linalg.inv(np.diag(new_beta_k)))
+
             _denumberator = np.where(denumberator == 0, -1, denumberator)
             result=numberator/_denumberator*old_B_k
             return np.where(result<0,0,result)
         else:
             numberator = np.dot(self.T_list[k].T,self.T_hat)
-            # print numberator.shape
-            # print old_B_k.shape
-            # print self.T_hat.shape
+            print numberator.shape
+            print old_B_k.shape
+            print self.T_hat.shape
             _temp = 1 / np.where(new_beta_k == 0, -1, new_beta_k)
             denumberator= np.dot(np.dot(old_B_k, self.T_hat.T),self.T_hat)+np.dot(old_B_k,np.diag(np.where(_temp < 0, 0, _temp)))
             _denumberator= np.where(denumberator == 0, -1, denumberator)
@@ -114,18 +129,19 @@ class SJTTR(object):
         T_hat=[item for item in self.T_list[k].T]
 
         #corresponding to the index of beta
-        rp_comment = [item[1] for item in sorted([(item, i) for i, item in enumerate(self.new_beta_k)], \
+        rp_comment = [item[1] for item in sorted([(item, i) for i, item in enumerate(self.new_beta_k[:self.slice_number[k]])], \
                                                     key=lambda x: x[0], reverse=True)[:self.m]]
 
+        self.X_list.append([self.lineno_list[k][item] for item in rp_comment])
 
-        if k<self.K-1:
-            #correspond to the lineno of TSC
-            temp=[self.lineno_list[k][item] for item in rp_comment]
-            self.X_list.append(temp)
-            for item in temp:
-                self.lineno_list[k+1].append(item)
-        else:
-            pass
+        # if k<self.K-1:
+        #     #correspond to the lineno of TSC
+        #     temp=[self.lineno_list[k][item] for item in rp_comment]
+        #     self.X_list.append(temp)
+        #     for item in temp:
+        #         self.lineno_list[k+1].append(item)
+        # else:
+        #     pass
 
         #
         for item in rp_comment:
@@ -162,6 +178,7 @@ class SJTTR(object):
         for k in xrange(self.K):
             if k==0:
                 N_old=self.C_list[k].shape[1]
+                print N_old
                 self.old_A_k,self.old_B_k,self.old_beta_k=self.initialize_A_B_beta(N_old,N_old)
                 self.theta_k = self._theta(k, N_old, N_old)
                 while True:
