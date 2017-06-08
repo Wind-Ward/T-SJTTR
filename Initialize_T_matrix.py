@@ -51,7 +51,7 @@ class Initialize_T_matrix(object):
                         break
 
         self.addRestVideoComment(dictory)
-        self.store_slice_number(self.slice_number)
+        #self.store_slice_number(self.slice_number)
 
 
     def calculateTwithLDA(self,dirname="data/LDA_ProcessWithT/"):
