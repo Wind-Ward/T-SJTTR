@@ -48,7 +48,7 @@ def distance(M,N):
 
 class SJTTR(object):
 
-    def __init__(self,rho=0.5,gamma=0.8,l_ambda=200,m=5,w=1):
+    def __init__(self,rho=0.5,gamma=0.8,l_ambda=200,m=10,w=1):
         self.C_list=grab_C_list()
 
         #print self.C_list[0].shape
@@ -166,11 +166,19 @@ class SJTTR(object):
 
 
     def display_representative_comment(self):
-        with open("data/representative", 'w') as f:
-            for i,item in enumerate(self.X_list):
-                for item2 in enumerate(item):
-                    f.write(item2+" ")
-                f.write("\n")
+        print self.X_list
+        with open("data/representative.txt", 'w') as f:
+            with open("data/1993410.txt", 'r') as f2:
+                lines=f2.readlines()
+                for i,item in enumerate(self.X_list):
+                    f.write("time slice:"+str(i)+"\n")
+                    for item2 in item:
+                        f.write(lines[int(item+1)]+"\n")
+                    f.write("\n")
+                    f.write("\n")
+
+
+
 
 
     def estimation(self):

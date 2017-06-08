@@ -53,7 +53,7 @@ class BulletScreen(object):
                     for item in temp["text"]:
                         if item not in vocabulary:
                             vocabulary[item]=0
-
+        print(tempLine)
         lines=sorted(tempLine, key= lambda e:(e.__getitem__('time')))
         print vocabulary
         print  "vocabulary size: %d " % len(vocabulary)

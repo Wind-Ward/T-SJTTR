@@ -16,6 +16,7 @@ class Initialize_C_Matrix(object):
         self.C_list=[]
         self.lines=[]
         self.lineno_list=[]
+        self.slice_number=[]
 
 
     def addRestVideoComment(self):
@@ -63,11 +64,7 @@ class Initialize_C_Matrix(object):
                     break
 
         self.addRestVideoComment()
-        print "size of C_list: " +str(len(self.C_list))
-        print "size of C_list[0]: " + str(len(self.C_list[0]))
-        print "size of C_list[0][3]: " + str(len(self.C_list[0][3]))
-        #print self.C_list[0][12]
-        self.store()
+        self.store_C_list()
         print self.lineno_list
         return self.C_list
 
@@ -75,6 +72,7 @@ class Initialize_C_Matrix(object):
 
     def caculateCwith_TFIDF(self):
         C_list=self.grab()
+        print C_list
         C_list2=[]
         for index,C_matrix in enumerate(C_list):
             _C_matrix=np.array(C_matrix,dtype=float)
@@ -97,12 +95,11 @@ class Initialize_C_Matrix(object):
             for i,item in enumerate(_C_matrix):
                 C_matrix2.append(item/row_sum[i]*np.log(1+row_num/column_sum))
             C_list2.append((np.array(C_matrix2)).T)
-        print "C_tfidf"
-        print C_list2[0][12]
+
         self.storeCaculatedTFIDF(C_list2)
 
 
-    def store(self):
+    def store_C_list(self):
         fw = open("data/var/C_list", "wb")
         pickle.dump(self.C_list,fw)
         fw.close()
@@ -123,6 +120,12 @@ class Initialize_C_Matrix(object):
         vocabList = pickle.load(fr)
         fr.close()
         return vocabList
+
+    def grab_slice_number(self):
+        fr = open("data/var/slice_number", "rb")
+        slice_number = pickle.load(fr)
+        fr.close()
+        return slice_number
 
 if __name__=="__main__":
     timeInterval=300

@@ -58,7 +58,7 @@ class Initialize_T_matrix(object):
         self.slice_number=self.grab_slice_number()
         print self.slice_number
 
-        theta=list(ldaModel.run2(dirname+"_comment.txt"))
+        theta=list(ldaModel.run(dirname+"_comment.txt"))
         T_list=[]
         print theta
         for item in self.slice_number:

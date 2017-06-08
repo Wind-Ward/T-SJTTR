@@ -8,28 +8,8 @@ import codecs
 import os
 
 from collections import OrderedDict
-#获取当前路径
 
 
-#导入配置文件
-# conf = ConfigParser.ConfigParser()
-# conf.read("setting.conf")
-# #文件路径
-# trainfile = os.path.join(path,os.path.normpath(conf.get("filepath", "trainfile")))
-# wordidmapfile = os.path.join(path,os.path.normpath(conf.get("filepath","wordidmapfile")))
-# thetafile = os.path.join(path,os.path.normpath(conf.get("filepath","thetafile")))
-# phifile = os.path.join(path,os.path.normpath(conf.get("filepath","phifile")))
-# paramfile = os.path.join(path,os.path.normpath(conf.get("filepath","paramfile")))
-# topNfile = os.path.join(path,os.path.normpath(conf.get("filepath","topNfile")))
-# tassginfile = os.path.join(path,os.path.normpath(conf.get("filepath","tassginfile")))
-# #模型初始参数
-# K = int(conf.get("model_args","K"))
-# alpha = float(conf.get("model_args","alpha"))
-# beta = float(conf.get("model_args","beta"))
-# iter_times = int(conf.get("model_args","iter_times"))
-# top_words_num = int(conf.get("model_args","top_words_num"))
-
-trainfile = "data/LDA_ProcessWithT/_comment.txt"
 wordidmapfile = "data/tmp/wordidmap.dat"
 thetafile ="data/tmp/model_theta.dat"
 phifile = "data/tmp/model_phi.dat"
@@ -39,7 +19,7 @@ tassginfile = "data/tmp/model_tassign.dat"
 K = 10
 alpha = 0.1
 beta =0.1
-iter_times = 10
+iter_times = 500
 top_words_num = 20
 
 class Document(object):
@@ -62,7 +42,7 @@ class DataPreProcessing(object):
 
 class LDAModel(object):
     
-    def __init__(self,dpre):
+    def __init__(self,dpre,trainfile):
 
         self.dpre = dpre #获取预处理参数
 
@@ -158,6 +138,9 @@ class LDAModel(object):
         self._phi()
 
         self.save()
+        return self.theta
+
+
     def _theta(self):
         for i in xrange(self.dpre.docs_count):
             self.theta[i] = (self.nd[i]+self.alpha)/(self.ndsum[i]+self.K * self.alpha)
@@ -209,7 +192,7 @@ class LDAModel(object):
 
 
 
-def preprocessing():
+def preprocessing(trainfile):
 
     with codecs.open(trainfile, 'r','utf-8') as f:
         docs = f.readlines()
@@ -242,10 +225,10 @@ def preprocessing():
     print dpre.docs
     return dpre
 
-def run():
-    dpre = preprocessing()
-    lda = LDAModel(dpre)
-    lda.est()
+def run(trainfile):
+    dpre = preprocessing(trainfile)
+    lda = LDAModel(dpre,trainfile)
+    return lda.est()
     
 
 if __name__ == '__main__':
