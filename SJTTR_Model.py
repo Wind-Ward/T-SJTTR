@@ -64,6 +64,9 @@ class SJTTR(object):
         self.X_list=[]
 
 
+
+
+
     def initialize_A_B_beta(self,N_old,N_new):
         old_A_k=np.full((N_old,N_new),10)
         old_B_k=np.full((N_old,N_new),10)
@@ -128,7 +131,7 @@ class SJTTR(object):
                                                  key=lambda x: x[0], reverse=True)[:self.m]]
 
         #corresponding to the index of lineno
-        self.X_list.append([self.lineno_list[k][item] for item in rp_comment])
+        self.X_list.append([self.lineno_list[k-1][item] for item in rp_comment])
 
         C_hat=[item for item in self.C_list[k].T]
         T_hat=[item for item in self.T_list[k].T]
@@ -149,15 +152,15 @@ class SJTTR(object):
 
 
     def display_representative_comment(self):
-        # print self.X_list
+
+        print self.X_list
         with open("data/representative.txt", 'w') as f:
             with open("data/1993410.txt", 'r') as f2:
                 lines=f2.readlines()
                 for i,item in enumerate(self.X_list):
                     f.write("time slice:"+str(i)+"\n")
                     for item2 in item:
-                        f.write(lines[int(item+1)]+"\n")
-                    f.write("\n")
+                        f.write(lines[int(item2)-1]+"\n")
                     f.write("\n")
 
 
@@ -179,7 +182,7 @@ class SJTTR(object):
                         self.new_A_k=self._A_k(k,self.new_beta_k,self.old_A_k)
                         dis=distance(self.old_A_k,self.new_A_k)
                         print "%d A dis: %f" % (k,dis)
-                        if dis<=0.1:
+                        if dis<=0.01:
                             break
                         else:
                             self.old_A_k=self.new_A_k
@@ -190,7 +193,7 @@ class SJTTR(object):
                         self.new_B_k = self._B_k(k, self.new_beta_k, self.old_B_k)
                         dis=distance(self.old_B_k, self.new_B_k)
                         print "%d B dis: %f" % (k, dis)
-                        if  dis<= 0.1:
+                        if  dis<= 0.01:
                             break
                         else:
                             self.old_B_k = self.new_B_k
@@ -198,7 +201,7 @@ class SJTTR(object):
                         print "%d B loop: %d" % (k,index)
                     dis=distance(self.old_beta_k,self.new_beta_k)
                     print "%d beta dis: %f" % (k, dis)
-                    if dis<=0.1:
+                    if dis<=0.01:
                         break
                     else:
                         self.old_beta_k=self.new_beta_k
@@ -223,7 +226,7 @@ class SJTTR(object):
                         self.new_A_k = self._A_k(k, self.new_beta_k, self.old_A_k)
                         dis=distance(self.old_A_k, self.new_A_k)
                         print "%d A dis: %f" % (k, dis)
-                        if dis <= 0.1:
+                        if dis <= 0.01:
                             break
                         else:
                             self.old_A_k = self.new_A_k
@@ -234,7 +237,7 @@ class SJTTR(object):
                         self.new_B_k = self._B_k(k, self.new_beta_k, self.old_B_k)
                         dis=distance(self.old_B_k, self.new_B_k)
                         print "%d B dis: %f" % (k, dis)
-                        if dis <= 0.1:
+                        if dis <= 0.01:
                             break
                         else:
                             self.old_B_k = self.new_B_k
@@ -242,7 +245,7 @@ class SJTTR(object):
                         print " %d B loop: %d" % (k, index)
                     dis=distance(self.old_beta_k, self.new_beta_k)
                     print "%d beta dis: %f" % (k, dis)
-                    if  dis<= 0.1:
+                    if  dis<= 0.01:
                         break
                     else:
                         self.old_beta_k=self.new_beta_k
@@ -259,10 +262,16 @@ class SJTTR(object):
                 print self.C_hat.shape
                 print self.T_hat.shape
                 print "zeze"
-
-        self._calc_last_comment()
+            else:
+                self._calc_last_comment(k)
 
         self.display_representative_comment()
+
+    def _calc_last_comment(self,k):
+        rp_comment = [item[1] for item in sorted([(item, i) for i, item in enumerate(self.new_beta_k)], \
+                                                 key=lambda x: x[0], reverse=True)[:self.m]]
+        self.X_list.append([self.lineno_list[k][item] for item in rp_comment])
+
 
 if __name__=="__main__":
     SJTTR().estimation()

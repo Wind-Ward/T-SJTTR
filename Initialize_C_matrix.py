@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 import numpy as np
 from ReadBulletScreen import BulletScreen
 from collections import OrderedDict
@@ -17,26 +20,46 @@ class Initialize_C_Matrix(object):
         self.lines=[]
         self.lineno_list=[]
         self.slice_number=[]
+        self.slice_TSC_list=[]
 
 
     def addRestVideoComment(self):
 
         lineno=[]
         self.slice_number.append(len(self.lines))
+        slice_TSC = []
         while (len(self.lines) != 0):
 
             copy_vocabulary = copy.copy(self.vocabulary)
+            slice_TSC.append(self.lines[0]["text"])
             for item in self.lines[0]["text"]:
+
                 if item in copy_vocabulary:
                     copy_vocabulary[item] += 1
             self.C.append(copy_vocabulary.values())
             lineno.append(self.lines[0]["lineno"])
             self.lines.pop(0)
             copy_vocabulary = copy.copy(self.vocabulary)
+
+        self.slice_TSC_list.append(slice_TSC)
         print "C size: %d " % len(self.C)
         self.lineno_list.append(lineno)
         self.store_lineno_list()
         self.store_slice_number(self.slice_number)
+        self.print_line()
+
+
+
+    def print_line(self):
+        with open("data/var/slice_TST.txt", 'w') as f:
+            with open("data/1993410.txt", 'r') as f2:
+                lines = f2.readlines()
+                for i, item in enumerate(self.lineno_list):
+                    f.write("time slice:" + str(i) + "\n")
+                    for item2 in item:
+                        f.write(lines[int(item2) - 1] + "\n")
+                    f.write("\n")
+
 
 
 
@@ -48,10 +71,12 @@ class Initialize_C_Matrix(object):
         number=0
         for index in xrange(int(timeLength/timeInterval)):
             lineno=[]
+            slice_TSC=[]
             while(len(self.lines)!=0):
 
                 copy_vocabulary = copy.copy(self.vocabulary)
                 if self.lines[0]["time"] <=lastTime:
+                    slice_TSC.append(self.lines[0]["text"])
                     for item in self.lines[0]["text"]:
                         if item in copy_vocabulary:
                             copy_vocabulary[item]+=1
@@ -66,6 +91,8 @@ class Initialize_C_Matrix(object):
                     self.lineno_list.append(lineno)
                     lineno = []
                     self.slice_number.append(number)
+                    self.slice_TSC_list.append(slice_TSC)
+                    slice_TSC=[]
                     number = 0
                     break
 
@@ -137,6 +164,7 @@ class Initialize_C_Matrix(object):
         fw = open("data/var/slice_number", "wb")
         pickle.dump(slice_number, fw)
         fw.close()
+
 
 
 
