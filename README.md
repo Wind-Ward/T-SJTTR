@@ -12,4 +12,4 @@
 *This is the school project.If you have any question,please let me know.*
 
 ## Author
-[WindWard](<xuan619@sina.com>)
+WindWard <xuan619@sina.com> 
