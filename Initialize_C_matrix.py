@@ -52,7 +52,7 @@ class Initialize_C_Matrix(object):
 
     def print_line(self):
         with open("data/var/slice_TST.txt", 'w') as f:
-            with open("data/1993410.txt", 'r') as f2:
+            with open("data/1.txt", 'r') as f2:
                 lines = f2.readlines()
                 for i, item in enumerate(self.lineno_list):
                     f.write("time slice:" + str(i) + "\n")
@@ -169,6 +169,6 @@ class Initialize_C_Matrix(object):
 
 
 if __name__=="__main__":
-    timeInterval=300
+    timeInterval=100
     i=Initialize_C_Matrix()
     i.caculateCwith_TFIDF(timeInterval)

@@ -48,7 +48,7 @@ def distance(M,N):
 
 class SJTTR(object):
 
-    def __init__(self,rho=0.5,gamma=0.8,l_ambda=200,m=8,w=1):
+    def __init__(self,rho=0.5,gamma=0.8,l_ambda=200,m=5,w=4):
         self.C_list=grab_C_list()
 
         #print self.C_list[0].shape
@@ -83,8 +83,6 @@ class SJTTR(object):
         if k==0:
 
             numberator=np.dot(self.C_list[k].T,self.C_list[k])
-            print numberator.shape
-            print "haha"
             denumberator=np.dot(old_A_k,numberator)+np.dot(old_A_k,np.linalg.inv(np.diag(new_beta_k)))
             #if any elements of denumberator is 0 ,the result there should be set 0
             _denumberator=np.where(denumberator==0,-1,denumberator)
@@ -92,8 +90,7 @@ class SJTTR(object):
             return np.where(result<0,0,result)
         else:
             numberator = np.dot(self.C_list[k].T,self.C_hat)
-            # print numberator.shape
-            # print old_A_k.shape
+
 
             _temp=1/np.where(new_beta_k == 0, -1, new_beta_k)
             print self.C_hat.shape
@@ -126,7 +123,7 @@ class SJTTR(object):
 
         print self.X_list
         with open("data/representative.txt", 'w') as f:
-            with open("data/1993410.txt", 'r') as f2:
+            with open("data/1.txt", 'r') as f2:
                 lines=f2.readlines()
                 for i,item in enumerate(self.X_list):
                     f.write("time slice:"+str(i)+"\n")
@@ -140,7 +137,7 @@ class SJTTR(object):
         for k in xrange(self.K):
             if k==0:
                 N_old=self.C_list[k].shape[1]
-                print N_old
+                self.temp_N_old=N_old
                 self.old_A_k,self.old_B_k,self.old_beta_k=self.initialize_A_B_beta(N_old,N_old)
                 self.theta_k =np.full(N_old,1.0,dtype=float)
                 while True:
@@ -181,9 +178,11 @@ class SJTTR(object):
             else:
                 print self.C_hat.shape
                 print self.T_hat.shape
-                print "haha"
-                N_old = self.C_list[k].shape[1]
 
+
+                N_old = self.C_list[k].shape[1]
+                self.temp_N_old = N_old
+                print
                 if  k<self.w:
                     N_new=N_old+self.m*k
                 else:
@@ -236,15 +235,21 @@ class SJTTR(object):
             else:
                 self._calc_last_comment(k)
 
-        self.display_representative_comment()
+        self.display_comment()
 
 
         # augugment C_hat and T_hat
     def _augumented_C_and_T(self, k, old_C_hat, old_T_hat):
         # corresponding to the index of beta
-        rp_comment = [item[1] for item in sorted([(item, i) for i, item in enumerate(self.new_beta_k)], \
+
+        rp_comment = [item[1] for item in sorted([(item, i) for i, item in enumerate(self.new_beta_k[:self.temp_N_old])], \
                                                  key=lambda x: x[0], reverse=True)[:self.m]]
 
+
+
+        # print rp_comment
+        # print k
+        # print self.lineno_list[k - 1]
         # corresponding to the index of lineno
         self.X_list.append([self.lineno_list[k - 1][item] for item in rp_comment])
 
@@ -256,8 +261,6 @@ class SJTTR(object):
         #initialize theta
         theta_k=[1.0 for item in self.C_list[k].T]
 
-
-
         self.selected_C_i.append([old_C_hat.T[item] for item in rp_comment])
         self.selected_T_i.append([old_T_hat.T[item] for item in rp_comment])
 
@@ -265,7 +268,7 @@ class SJTTR(object):
         #     for item in rp_comment:
         #         C_hat.append(old_C_hat.T[item])
         #         T_hat.append(old_T_hat.T[item])
-        if k<=self.w:
+        if k<self.w:
             for index in xrange(len(self.selected_C_i)):
                 for item in self.selected_C_i[index]:
                     C_hat.append(item)
@@ -284,7 +287,7 @@ class SJTTR(object):
 
 
     def _calc_last_comment(self,k):
-        rp_comment = [item[1] for item in sorted([(item, i) for i, item in enumerate(self.new_beta_k)], \
+        rp_comment = [item[1] for item in sorted([(item, i) for i, item in enumerate(self.new_beta_k[:self.temp_N_old])], \
                                                  key=lambda x: x[0], reverse=True)[:self.m]]
         self.X_list.append([self.lineno_list[k][item] for item in rp_comment])
 

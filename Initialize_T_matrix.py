@@ -101,7 +101,7 @@ class Initialize_T_matrix(object):
 
 
 if __name__=="__main__":
-    timeInterval = 300
+    timeInterval = 100
     t=Initialize_T_matrix()
     #t.initializeT(timeInterval)
     t.calculateTwithLDA()

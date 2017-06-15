@@ -2,8 +2,11 @@
 *.pyc
 /data/var/
 /python-LDA/
-/data/LDA_ProcessWithT/
-/data/tmp/
+/data/LDA_ProcessWithT/*
+/data/tmp/*
 .idea
 /data/train.dat
 /data/representative2.txt
+/nlp-metrics/
+/PythonROUGE/
+/rouge-2.0/

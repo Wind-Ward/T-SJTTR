@@ -28,10 +28,12 @@ class BulletScreen(object):
 
     def read(self):
 
-        f = open("data/1993410.txt", "r")
-        timelength = 5640
-        #f = open("data/2152134.txt", "r")
-        # self.timelength = 12306
+        # f = open("data/1993410.txt", "r")
+        # timelength = 5640
+        # f = open("data/5077534.txt", "r")
+        # timelength = 4740
+        f = open("data/1.txt", "r")
+        timelength = 2582
 
         tempLine=[]
         #vocabulary=set()
