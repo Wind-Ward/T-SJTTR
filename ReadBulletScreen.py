@@ -26,14 +26,14 @@ class BulletScreen(object):
             self.stop_words.add(w.strip())
 
 
-    def read(self):
+    def read(self,file_name,timelength):
 
-        # f = open("data/1993410.txt", "r")
-        # timelength = 5640
+        #f = open("data/1993410.txt", "r")
+        #timelength = 5640
         # f = open("data/5077534.txt", "r")
         # timelength = 4740
-        f = open("data/1.txt", "r")
-        timelength = 2582
+        f = open(file_name, "r")
+        #timelength = 2582
 
         tempLine=[]
         #vocabulary=set()
@@ -55,12 +55,12 @@ class BulletScreen(object):
                     for item in temp["text"]:
                         if item not in vocabulary:
                             vocabulary[item]=0
-        print(tempLine)
+        #print(len(tempLine))
         lines=sorted(tempLine, key= lambda e:(e.__getitem__('time')))
-        print vocabulary
-        print  "vocabulary size: %d " % len(vocabulary)
-        print  "video comment size: %d " % len(lines)
-        print  lines[12]
+        # print vocabulary
+        # print  "vocabulary size: %d " % len(vocabulary)
+        # print  "video comment size: %d " % len(lines)
+        # print  lines[12]
         self.store(lines,timelength)
         return lines,timelength,vocabulary
 
@@ -69,13 +69,14 @@ class BulletScreen(object):
         pickle.dump({"lines":lines,"timelength":timelength},fw)
         fw.close()
 
-    def run(self):
+    def run(self,file_name,timelength):
         self.load_stop_words()
-        return self.read()
+        return self.read(file_name,timelength)
 
 if __name__=="__main__":
-
-    print BulletScreen().run()
+    filename="data/1.txt"
+    timelenth=2582
+    print BulletScreen().run(filename,timelenth)
 
 
 

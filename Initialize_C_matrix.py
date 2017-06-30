@@ -33,7 +33,6 @@ class Initialize_C_Matrix(object):
             copy_vocabulary = copy.copy(self.vocabulary)
             slice_TSC.append(self.lines[0]["text"])
             for item in self.lines[0]["text"]:
-
                 if item in copy_vocabulary:
                     copy_vocabulary[item] += 1
             self.C.append(copy_vocabulary.values())
