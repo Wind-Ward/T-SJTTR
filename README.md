@@ -9,7 +9,7 @@
 * jieba
 * uniout
 ## CAVEAT
-*This is the school project.If you have any question,please let me know.*
+*This is the school project.If you have any question,please feel free to contact me.*
 
 ## Author
 WindWard <xuan619@sina.com> 
